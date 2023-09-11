@@ -26,10 +26,6 @@
 	"packageManager": "pnpm@8.6.11",
 	"devDependencies": {
 		"@iconify-json/ant-design": "^1.1.7",
-		"@iconify-json/carbon": "^1.1.20",
-		"@iconify-json/ph": "^1.1.6",
-		"@iconify/vue": "^4.1.1",
-		"@intlify/unplugin-vue-i18n": "^0.12.2",
 		"@types/node": "^18.17.5",
 		"@typescript-eslint/parser": "^6.4.0",
 		"@unocss/eslint-config": "^0.55.0",
@@ -47,13 +43,11 @@
 		"c8": "^8.0.1",
 		"changelogen": "^0.5.4",
 		"cross-env": "^7.0.3",
-		"dayjs": "^1.11.9",
 		"eslint": "^8.47.0",
 		"eslint-config-prettier": "^9.0.0",
 		"eslint-plugin-prettier": "^5.0.0",
 		"eslint-plugin-vue": "^9.17.0",
 		"husky": "^8.0.3",
-		"ityped": "^1.0.3",
 		"lightningcss": "^1.21.5",
 		"lint-staged": "^14.0.0",
 		"local-pkg": "^0.4.3",
@@ -77,13 +71,10 @@
 		"vite-plugin-removelog": "^0.2.1",
 		"vite-plugin-use-modules": "^1.4.5",
 		"vite-plugin-vue-devtools": "^0.5.1",
-		"vite-plugin-vue-markdown": "^0.23.7",
 		"vite-plugin-warmup": "^0.1.0",
 		"vue": "^3.3.4",
-		"vue-dark-switch": "^1.0.3",
 		"vue-request": "2.0.3",
-		"vue-router": "^4.2.4",
-		"vue-toastification": "2.0.0-rc.5"
+		"vue-router": "^4.2.4"
 	},
 	"lint-staged": {
 		"*.{js,jsx,ts,tsx,vue}": "eslint --cache --fix"
@@ -97,6 +88,8 @@
 		"ant-design-vue": "4.0.0",
 		"perfect-debounce": "^1.0.0",
 		"sass": "^1.63.6",
-		"smooth-scrollbar": "^8.8.4"
+		"vue-dark-switch": "^1.0.3",
+		"smooth-scrollbar": "^8.8.4",
+		"dayjs": "^1.11.9"
 	}
 }

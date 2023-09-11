@@ -20,3 +20,9 @@
 		<path fill="none" d="M0 0h36v36H0z" />
 	</svg>
 </template>
+
+<script lang="ts">
+export default {
+	name: 'IconShard',
+}
+</script>

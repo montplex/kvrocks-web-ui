@@ -29,8 +29,7 @@
 				:border="false"
 				style="border-inline-end: none"
 			>
-				<a-menu-item key="1" @click="$router.push('/')">
-					<template #icon><i class="i-carbon:name-space !text-lg" /> </template>
+				<a-menu-item key="1" :icon="h(NameSpace)" @click="$router.push('/')">
 					<span>Namespace</span>
 				</a-menu-item>
 			</a-menu>
@@ -55,6 +54,8 @@
 	</a-layout>
 </template>
 <script lang="ts" setup>
+import { h } from 'vue'
+import NameSpace from './Icon/NameSpace.vue'
 const selectedKeys = ref<string[]>(['1'])
 const collapsed = ref<boolean>(true)
 const tabsStore = useTabsStore()

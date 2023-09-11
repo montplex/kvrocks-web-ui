@@ -18,3 +18,9 @@
 		<circle cx="19" cy="18" r="1" fill="currentColor" />
 	</svg>
 </template>
+
+<script lang="ts">
+export default {
+	name: 'IconCluster',
+}
+</script>

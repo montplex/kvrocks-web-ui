@@ -17,7 +17,7 @@
 			<!-- 右侧按钮 -->
 			<template #rightExtra>
 				<a-dropdown id="tab-menus" :trigger="['click', 'hover']">
-					<MagicIcon class="mr-8"></MagicIcon>
+					<IconMagic class="mr-8"></IconMagic>
 					<template #overlay>
 						<a-menu>
 							<a-menu-item @click="tabsStore.closeCurrent(route.path)">

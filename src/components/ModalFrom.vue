@@ -41,7 +41,7 @@
 						<a-select-option v-for="(item, index) in nodes" :key="index" :value="item.addr" :label="item.addr">
 							<span class="flex_c">
 								<span role="img" :aria-label="item.addr">
-									<NodeIcon />
+									<IconNode />
 								</span>
 								&nbsp;&nbsp;{{ item.addr }}
 							</span>

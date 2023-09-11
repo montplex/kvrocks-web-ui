@@ -7,7 +7,11 @@
 	</span>
 </template>
 
-<script lang="ts" setup></script>
+<script lang="ts">
+export default {
+	name: 'GiMoreIcon',
+}
+</script>
 
 <style lang="scss" scoped>
 .gi-more-icon-wrap {

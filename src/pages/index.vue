@@ -36,7 +36,7 @@
 									class="flex cursor-pointer items-center gap-2 text-lg text-[#1677ff] hover:opacity-70"
 									@click="hcNameSpace(item)"
 								>
-									<i class="i-carbon:name-space block"></i>
+									<IconNameSpace />
 									<span>{{ item }}</span>
 								</div>
 								<a-button
