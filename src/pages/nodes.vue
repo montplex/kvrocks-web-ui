@@ -113,7 +113,6 @@ import { message, type FormInstance, Modal } from 'ant-design-vue'
 import type { Cluster, Node } from '#/cluster'
 import { createVNode, h } from 'vue'
 import dayjs from 'dayjs'
-import { on } from 'events'
 
 const route = useRoute()
 const router = useRouter()
@@ -258,6 +257,14 @@ const shardCreatedOk = () => {
 }
 
 const deleteNodes = (column: any) => {
-	console.log(column)
+	const list = shards.value?.shards.map((item) => {
+		return {
+			...item,
+			nodes: item.nodes.filter((node) => node.id !== column.id),
+		}
+	})
+	shards.value = { ...shards.value, shards: list } as Cluster
 }
+
+// console.log(removeNodeById(arr,'1234'))
 </script>
