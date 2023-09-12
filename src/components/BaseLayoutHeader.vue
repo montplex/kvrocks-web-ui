@@ -9,12 +9,6 @@
 	</a-layout-header>
 </template>
 <script setup lang="ts">
-import {
-	UserOutlined,
-	MenuUnfoldOutlined,
-	MenuFoldOutlined,
-	HomeOutlined,
-} from '@ant-design/icons-vue'
 defineProps(['modelValue'])
 defineEmits(['update:modelValue'])
 </script>

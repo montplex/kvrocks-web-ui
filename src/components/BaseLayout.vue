@@ -13,7 +13,7 @@
 				:class="{ 'justify-center': collapsed }"
 				@click="$router.push('/')"
 			>
-				<img class="h-10 w-10" src="/public//logo.svg" alt="Apache Kvrocks" />
+				<img class="h-10 w-10" src="/logo.svg" alt="Apache Kvrocks" />
 				<h3
 					v-if="!collapsed"
 					class="text-xl font-semibold text-white hover:text-[#ff5318] hover:opacity-90"

@@ -1,6 +1,6 @@
 <template>
 	<div class="flex-1 px-6">
-		<div>
+		<ASpin :spinning="loading">
 			<h3 class="text-ba py-4 font-semibold">{{ cluster }}</h3>
 			<div class="flex flex-row-reverse gap-4 pb-6">
 				<a-button
@@ -47,6 +47,7 @@
 				</template>
 				<template #expandedRowRender="{ record }">
 					<a-table
+						v-if="record.nodes.length"
 						:columns="nodesColumns"
 						:data-source="record.nodes"
 						:pagination="false"
@@ -91,7 +92,7 @@
 					</a-table>
 				</template>
 			</a-table>
-		</div>
+		</ASpin>
 		<!-- <div v-else> choose cluster!</div> -->
 	</div>
 	<ModalFrom
@@ -109,10 +110,12 @@ import {
 	DeleteOutlined,
 	ExclamationCircleOutlined,
 } from '@ant-design/icons-vue'
-import { message, type FormInstance, Modal } from 'ant-design-vue'
+
+import { message, Modal } from 'ant-design-vue'
 import type { Cluster, Node } from '#/cluster'
 import { createVNode, h } from 'vue'
 import dayjs from 'dayjs'
+import { e } from 'unocss'
 
 const route = useRoute()
 const router = useRouter()
@@ -125,36 +128,18 @@ const loading = ref(true)
 const shards = ref<Cluster>()
 
 watch(
-	() => route.query.cluster,
+	() => store.current,
 	(val) => {
 		if (val) {
-			cluster.value = val as string
-			hcClusterItem(val as string)
+			cluster.value = val[0]
+			clusterInit(val[0])
 		}
 	},
+	{ immediate: true },
 )
 
-onMounted(async () => {
+async function clusterInit(cluster: string) {
 	loading.value = true
-	if (!cluster.value) {
-		cluster.value = store.clusterList[0]
-		hcClusterItem(cluster.value)
-	}
-	loading.value = false
-})
-
-const initNodes = async () => {
-	loading.value = true
-	const res = await getListNode({
-		namespace: namespace,
-		cluster: 'cluster',
-		shard: 'shard',
-	})
-	// nodes.value = res.data.nodes
-	loading.value = false
-}
-
-const hcClusterItem = async (cluster: string) => {
 	const res = await getCluster(namespace, cluster)
 	const list = res.data.cluster.shards
 	list.map((item: any, idx: number) => {
@@ -162,16 +147,7 @@ const hcClusterItem = async (cluster: string) => {
 		item.nodes.map((node: any, index: number) => (node.key = index + 1))
 	})
 	shards.value = { ...res.data.cluster, shards: list }
-}
-
-/** 删除分片  */
-const hcDelShard = async (cluster: string, shard: string) => {
-	loading.value = true
-	const res = await delShard({ namespace, cluster, shard })
-	if (res.data === 'ok') {
-		message.success('delete success')
-		loading.value = false
-	}
+	loading.value = false
 }
 
 /** 删除集群 */
@@ -188,8 +164,10 @@ const hcDelCluster = async () => {
 				.then((res) => {
 					if (res.data === 'ok') {
 						message.success('delete success')
-						const index = store.clusterList.indexOf(cluster.value) as number
-						store.clusterList?.splice(index, 1)
+						const index = store.clusters.findIndex(
+							(item) => item.name === cluster.value,
+						)
+						store.clusters?.splice(index, 1)
 						router.push({
 							name: 'Nodes',
 							query: { cluster: store.clusterList[0] },
@@ -220,10 +198,6 @@ const columns = [
 ]
 
 const nodesColumns = [
-	// {
-	// 	title: 'ID',
-	// 	dataIndex: 'id',
-	// },
 	{
 		title: 'Addr',
 		dataIndex: 'addr',
@@ -265,6 +239,4 @@ const deleteNodes = (column: any) => {
 	})
 	shards.value = { ...shards.value, shards: list } as Cluster
 }
-
-// console.log(removeNodeById(arr,'1234'))
 </script>

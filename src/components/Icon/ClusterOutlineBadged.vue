@@ -38,6 +38,6 @@
 
 <script lang="ts">
 export default {
-	name: 'ClarityDataClusterOutlineBadged',
+	name: 'IconClusterOutlineBadged',
 }
 </script>

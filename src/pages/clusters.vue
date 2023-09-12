@@ -9,7 +9,7 @@
 							type="primary"
 							:icon="h(PlusCircleOutlined)"
 							class="flex_cc"
-							@click="clusterShow"
+							@click="open = true"
 						/>
 					</a-tooltip>
 				</div>
@@ -22,23 +22,24 @@
 			<a-spin :spinning="loading" class="pt-60">
 				<div class="flex">
 					<a-menu
-						v-model:selectedKeys="current"
+						v-model:selectedKeys="store.current"
 						style="width: 256px; height: 100%"
 						mode="inline"
 						class="min-h-max"
-						@click="hcClusterItem"
+						@click="itemClick"
 					>
 						<a-menu-item
-							v-for="menu in store.clusterList"
-							:key="menu"
-							:title="menu"
+							v-for="it in store.clusters"
+							:key="it.name"
+							:title="it.name"
 						>
 							<template #icon>
-								<IconClusterLine />
+								<IconClusterOutlineBadged v-if="it.selected" />
+								<IconClusterLine v-else />
 							</template>
 							<div class="flex_c">
-								<span class="flex-1 text-base">{{ menu }}</span>
-								<!-- <i @click.stop>
+								<div class="flex-1 text-base">{{ it.name }}</div>
+								<!-- <div @click.stop>
 									<a-dropdown :trigger="['click']" :arrow="{ pointAtCenter: true }">
 										<a-button type="text" class="text-main" @click.prevent>
 											<template #icon>
@@ -56,7 +57,7 @@
 											</a-menu>
 										</template>
 									</a-dropdown>
-								</i> -->
+								</div> -->
 							</div>
 						</a-menu-item>
 					</a-menu>
@@ -79,12 +80,12 @@ import { ref, h } from 'vue'
 const route = useRoute()
 const router = useRouter()
 const namespace = route.params.namespace as string
-
 const open = ref<boolean>(false)
 const loading = ref<boolean>(true)
-const type = ref<'cluster' | 'shard'>('cluster')
+
 const store = useClusterStore()
-const current = ref<string[]>([store.clusterList[0]])
+/* const current = ref<string[]>([store.clusterList[0]])
+const select = ref<string[]>([store.clusters[0]?.name])
 
 watch(
 	() => route.query.cluster,
@@ -92,28 +93,33 @@ watch(
 		if (val) {
 			current.value = [val as string]
 		} else {
+			console.log('val', val)
 			current.value = [store.clusterList[0]]
 		}
 	},
 )
-
+ */
 onMounted(async () => {
+	console.log('clusterPage---onMounted')
 	loading.value = true
 	let res = await getClusterList(namespace)
 	store.setClusterList(res.data.clusters)
 	loading.value = false
+	const list = res.data.clusters.map((it) => ({ name: it, selected: false }))
+	store.setClusters(list)
+	store.setCurrent((route.query.cluster as string) || res.data.clusters[0])
 })
 
-const clusterShow = () => {
-	type.value = 'cluster'
-	open.value = true
-}
-
 const createdClusterOk = (name: string) => {
+	store.clusters.unshift({ name, selected: false })
 	store.clusterList.unshift(name)
 }
 
-const hcClusterItem = async (e: any) => {
+/* const hcClusterItem = async (e: any) => {
+	router.push({ name: 'Nodes', query: { cluster: e.key } })
+} */
+const itemClick = async (e: any) => {
+	store.setCurrent(e.key)
 	router.push({ name: 'Nodes', query: { cluster: e.key } })
 }
 </script>

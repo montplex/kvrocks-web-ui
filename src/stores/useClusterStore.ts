@@ -3,26 +3,40 @@ import { defineStore } from 'pinia'
 interface State {
 	nameSpaceList: string[]
 	clusterList: string[]
+	clusters: { name: string; selected: boolean }[]
+	current: string[]
 }
 export default defineStore('cluster', {
 	state: (): State => ({
-		nameSpaceList: [] as string[],
-		clusterList: [] as any[],
+		nameSpaceList: [],
+		clusterList: [],
+		clusters: [],
+		current: [],
 	}),
 	actions: {
 		setClusterList(list: State['clusterList']) {
 			this.clusterList = list
 		},
+		setClusters(list: State['clusters']) {
+			this.clusters = list
+		},
 		setNameSpaceList(list: string[]) {
 			this.nameSpaceList = list
 		},
-		/* setClusterSelected(index: number) {
-			// 先清空所有的
-			this.clusterList.forEach((item) => {
-				item.selected = false
-			})
-			// 再设置选中的
-			this.clusterList[index].selected = true
-		}, */
+		setCurrent(name: string) {
+			this.current = [name]
+			this.currentChange(name)
+			/* if (name) {
+
+			} else {
+				this.currentChange(this.clusters[0]?.name)
+				this.current = [this.clusters[0]?.name]
+			} */
+		},
+		currentChange(name?: string) {
+			const index = this.clusters.findIndex((item) => item.name === name)
+			this.clusters.forEach((item) => (item.selected = false))
+			this.clusters[index].selected = true
+		},
 	},
 })

@@ -23,7 +23,10 @@ export default defineConfig({
 		colors: {
 			hui: 'rgb(242, 243, 245)',
 			main: '#1677ff',
+			hover: '#e6f4ff',
 			t88: 'rgba(0, 0, 0, 0.88)',
+			dark: '#100c2a',
+			'sale-006': 'rgba(0, 0, 0, 0.06)',
 		},
 	},
 	transformers: [transformerDirectives(), transformerVariantGroup()],
