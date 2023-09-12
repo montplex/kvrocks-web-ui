@@ -100,7 +100,6 @@ watch(
 )
  */
 onMounted(async () => {
-	console.log('clusterPage---onMounted')
 	loading.value = true
 	let res = await getClusterList(namespace)
 	store.setClusterList(res.data.clusters)

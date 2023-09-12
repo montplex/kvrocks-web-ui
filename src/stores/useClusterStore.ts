@@ -26,12 +26,6 @@ export default defineStore('cluster', {
 		setCurrent(name: string) {
 			this.current = [name]
 			this.currentChange(name)
-			/* if (name) {
-
-			} else {
-				this.currentChange(this.clusters[0]?.name)
-				this.current = [this.clusters[0]?.name]
-			} */
 		},
 		currentChange(name?: string) {
 			const index = this.clusters.findIndex((item) => item.name === name)
