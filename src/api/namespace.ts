@@ -1,9 +1,16 @@
 import { http } from '~@/composables/http'
+import type {
+	ClusterRes,
+	Body,
+	ShardRes,
+	ShardResList,
+	ListNode,
+	MigrateBody,
+} from '#/cluster'
 import { useRequest } from 'vue-request'
-import { ClusterRes, Body, ShardRes, ShardResList, ListNode } from '#/cluster'
 
-type Create = { data: string }
 type Err = { error: { message: string } }
+type Create = { data: string }
 let url = ''
 
 /**
@@ -30,13 +37,13 @@ export const getNamespaceList = () => {
 
 /** Delete Namespace 删除命名空间 */
 export const delNamespace = (namespace: string) => {
-	if (process.env.NODE_ENV === 'production') {
-		url = `/v1/namespaces/${namespace}`
+	/* if (process.env.NODE_ENV === 'production') {
+		url =
 	} else {
 		url = `/v1/namespaces/namespace_1`
-	}
+	} */
 	return http.get<{ data: 'ok' }>({
-		url,
+		url: `/v1/namespaces/${namespace}`,
 	})
 }
 
@@ -51,50 +58,81 @@ type ClusterBody = {
 
 /** Create Cluster 创建集群 */
 export const createCluster = (namespace: string, data: ClusterBody) => {
-	if (process.env.NODE_ENV === 'production') {
+	/* 	if (process.env.NODE_ENV === 'production') {
 		url = `/v1/namespaces/${namespace}/clusters`
 	} else {
 		url = `/v1/namespaces/namespace_1/clusters`
 	}
+ */
+	type TCreate = {
+		error: {
+			message: string
+		}
+		data?: null | string
+	}
 
-	return http.post<Create>({
-		url,
+	return http.post<TCreate>({
+		url: `/v1/namespaces/${namespace}/clusters`,
 		data,
 	})
 }
 
 /** List Cluster 列表群集 */
 export const getClusterList = (namespace: string) => {
-	if (process.env.NODE_ENV === 'production') {
+	/* if (process.env.NODE_ENV === 'production') {
 		url = `/v1/namespaces/${namespace}/clusters`
 	} else {
 		url = `/v1/namespaces/namespace_1/clusters`
-	}
+	} */
 
 	return http.get<RES<{ clusters: string[] }>>({
-		url,
+		url: `/v1/namespaces/${namespace}/clusters`,
 	})
+}
+
+export const getClusters = (namespace: string) => {
+	const { data, loading, refresh, error } = useRequest(() =>
+		http.get<RES<{ clusters: string[] }>>({
+			url: `/v1/namespaces/${namespace}/clusters`,
+		}),
+	)
+	let list: { name: string; selected: boolean }[] | undefined
+	list = data.value?.data?.clusters.map((it) => ({
+		name: it,
+		selected: false,
+	}))
+
+	return {
+		data: list,
+		loading,
+		error,
+		refresh,
+	}
 }
 
 /** Get Cluster 获取群集 */
 export const getCluster = (namespace: string, cluster: string) => {
-	if (process.env.NODE_ENV === 'production') {
+	/* if (process.env.NODE_ENV === 'production') {
 		url = `/v1/namespaces/${namespace}/clusters/${cluster}`
 	} else {
 		url = `/v1/namespaces/namespace_1/clusters/cluster_1`
-	}
-	return http.get<ClusterRes>({ url })
+	} */
+	return http.get<ClusterRes>({
+		url: `/v1/namespaces/${namespace}/clusters/${cluster}`,
+	})
 }
 
 /** Delete Cluster 删除集群 */
 export const delCluster = (namespace: string, cluster: string) => {
-	if (process.env.NODE_ENV === 'production') {
+	/* if (process.env.NODE_ENV === 'production') {
 		url = `/v1/namespaces/${namespace}/clusters/${cluster}`
 	} else {
 		url = `/v1/namespaces/namespace_1/clusters/cluster_1`
 	}
-
-	return http.delete<{ data: 'ok' }>({ url })
+ */
+	return http.delete<{ data: 'ok' }>({
+		url: `/v1/namespaces/${namespace}/clusters/${cluster}`,
+	})
 }
 
 /**--------------------分片 */
@@ -108,14 +146,14 @@ export const createShard = (
 	cluster: string,
 	body: ShardBody,
 ) => {
-	if (process.env.NODE_ENV === 'production') {
+	/* 	if (process.env.NODE_ENV === 'production') {
 		url = `/v1/namespaces/${namespace}/clusters/${cluster}/shards`
 	} else {
 		url = `/v1/namespaces/namespace_1/clusters/cluster_1/shards`
 	}
-
-	return http.post<{ data: 'created' }>({
-		url,
+ */
+	return http.post<{ data: 'ok' }>({
+		url: `/v1/namespaces/${namespace}/clusters/${cluster}/shards`,
 		data: body,
 	})
 }
@@ -173,16 +211,16 @@ type NodeBody = {
 }
 
 /** Create Node 创建节点 */
-export const createNode = (body: ShardParams & { data: NodeBody }) => {
-	const { namespace, cluster, shard } = body
-	if (process.env.NODE_ENV === 'production') {
+export const createNode = (path: ShardParams & { data: NodeBody }) => {
+	const { namespace, cluster, shard } = path
+	/* if (process.env.NODE_ENV === 'production') {
 		url = `/v1/namespaces/${namespace}/clusters/${cluster}/shards/${shard}/nodes`
 	} else {
 		url = `/v1/namespaces/namespace_1/clusters/cluster_1/shards/shard_1/nodes`
-	}
-	return http.post<{ data: 'created' }>({
-		url,
-		data: body.data,
+	} */
+	return http.post<{ data: 'created' } & Err>({
+		url: `/v1/namespaces/${namespace}/clusters/${cluster}/shards/${shard}/nodes`,
+		data: path.data,
 	})
 }
 
@@ -202,17 +240,12 @@ export const delNode = (data: Body) => {
 	})
 }
 
-type MigrateBody = {
-	source: number
-	target: number
-	/** 迁移槽和数据 */
-	slot?: number
-	/**
-	 * Migrate Slot Only 仅迁移插槽
-	 * - 注意: 仅迁移插槽，并不会迁移数据。因此，在调用此 API 之前，必须确保数据已迁移。
-	 * */
-	slots?: string[]
-}
+/* 迁移插槽和数据步骤: 1)制定计划 -> 2)迁移数据 -> 3)添加从节点
+	1. 需要准备好迁移的的节点，而且保证已经加入到集群
+	2. 准备迁移插槽和数据
+	3. 制定插槽迁移计划,迁移到新的节点中: 假如我们现在有三个节点，又加入一个新节点，我们怎么样把插槽进行一个规划？
+		- 1. 选择一个节点，将这个节点的插槽迁移到新的节点中
+*/
 
 /** Migrate  迁移 */
 export const MigrateSlotData = (

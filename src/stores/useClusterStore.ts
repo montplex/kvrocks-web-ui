@@ -2,21 +2,18 @@ import { defineStore } from 'pinia'
 
 interface State {
 	nameSpaceList: string[]
-	clusterList: string[]
 	clusters: { name: string; selected: boolean }[]
 	current: string[]
+	loading: boolean
 }
 export default defineStore('cluster', {
 	state: (): State => ({
 		nameSpaceList: [],
-		clusterList: [],
 		clusters: [],
 		current: [],
+		loading: false,
 	}),
 	actions: {
-		setClusterList(list: State['clusterList']) {
-			this.clusterList = list
-		},
 		setClusters(list: State['clusters']) {
 			this.clusters = list
 		},
@@ -29,8 +26,12 @@ export default defineStore('cluster', {
 		},
 		currentChange(name?: string) {
 			const index = this.clusters.findIndex((item) => item.name === name)
+			console.log(index, name)
 			this.clusters.forEach((item) => (item.selected = false))
 			this.clusters[index].selected = true
+		},
+		setLoading(type: boolean) {
+			this.loading = type
 		},
 	},
 })

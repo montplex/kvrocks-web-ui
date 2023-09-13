@@ -67,7 +67,7 @@ export default function () {
 		// 调试工具
 		env.VITE_APP_DEV_TOOLS && VueDevTools(),
 		// mock 服务
-		Mock({ prodEnabled: false }),
+		// Mock({ prodEnabled: false }),
 
 		// 组件自动按需引入
 		Components({

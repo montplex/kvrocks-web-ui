@@ -3,24 +3,26 @@
 		<div class="border-b border-light-400 px-6 py-4 text-t88">
 			<div class="flex_c justify-between text-base font-semibold">
 				<div class="">Clusters</div>
-				<div class="">
+				<div v-if="store.clusters?.length">
 					<a-tooltip title="Create Cluster">
 						<a-button
 							type="primary"
 							:icon="h(PlusCircleOutlined)"
 							class="flex_cc"
-							@click="open = true"
+							@click="openShow"
 						/>
 					</a-tooltip>
 				</div>
 			</div>
 			<div>
-				<span class="opacity-70">Namespace in {{ namespace }}</span>
+				<span class="opacity-70"
+					>Namespace in {{ $route.params.namespace as string }}</span
+				>
 			</div>
 		</div>
-		<div class="_body h-full w-full" style="">
-			<a-spin :spinning="loading" class="pt-60">
-				<div class="flex">
+		<div class="_body h-full w-full">
+			<a-spin :spinning="base.loading" class="mx-auto pt-60">
+				<div v-if="store.clusters?.length" class="flex">
 					<a-menu
 						v-model:selectedKeys="store.current"
 						style="width: 256px; height: 100%"
@@ -61,8 +63,18 @@
 							</div>
 						</a-menu-item>
 					</a-menu>
-					<RouterView />
+					<RouterView v-if="store.clusters" />
 				</div>
+				<a-empty
+					v-if="!store.clusters?.length && !base.loading"
+					:image-style="{ height: '80px' }"
+					class="rounded-lg !m-0 !py-20"
+				>
+					<template #description>
+						<span> The clusters in this namespace is empty. </span>
+					</template>
+					<a-button type="primary" @click="openShow">Create Now</a-button>
+				</a-empty>
 			</a-spin>
 		</div>
 	</div>
@@ -79,11 +91,12 @@ import { ref, h } from 'vue'
 
 const route = useRoute()
 const router = useRouter()
-const namespace = route.params.namespace as string
+const namespace = ref(route.params.namespace as string)
 const open = ref<boolean>(false)
 const loading = ref<boolean>(true)
 
 const store = useClusterStore()
+const base = baseStore()
 /* const current = ref<string[]>([store.clusterList[0]])
 const select = ref<string[]>([store.clusters[0]?.name])
 
@@ -98,20 +111,42 @@ watch(
 		}
 	},
 )
- */
-onMounted(async () => {
-	loading.value = true
-	let res = await getClusterList(namespace)
-	store.setClusterList(res.data.clusters)
-	loading.value = false
-	const list = res.data.clusters.map((it) => ({ name: it, selected: false }))
-	store.setClusters(list)
-	store.setCurrent((route.query.cluster as string) || res.data.clusters[0])
-})
+*/
+
+watch(
+	() => route.params.namespace,
+	(val) => {
+		val && init(val as string)
+	},
+)
+
+const openShow = () => {
+	open.value = true
+}
+
+onMounted(() => init(route.params.namespace as string))
+const init = (namespace: string) => {
+	store.clusters = []
+	base.setLoading(true)
+	getClusterList(namespace)
+		.then((res) => {
+			if (res.data.clusters?.length) {
+				const list = res.data.clusters.map((it) => ({
+					name: it,
+					selected: false,
+				}))
+				store.setClusters(list)
+				store.setCurrent(
+					(route.query.cluster as string) || res.data.clusters[0],
+				)
+			}
+			base.setLoading(false)
+		})
+		.finally(() => base.setLoading(false))
+}
 
 const createdClusterOk = (name: string) => {
 	store.clusters.unshift({ name, selected: false })
-	store.clusterList.unshift(name)
 }
 
 /* const hcClusterItem = async (e: any) => {

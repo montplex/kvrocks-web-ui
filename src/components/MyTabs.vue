@@ -53,7 +53,6 @@ import {
 	PlusOutlined,
 } from '@ant-design/icons-vue'
 import type { RouteRecordRaw } from 'vue-router'
-import useTabsStore from '~@/stores/useTabsStore'
 
 const route = useRoute()
 const router = useRouter()
@@ -88,7 +87,6 @@ const handleTabClick = (key: string) => {
 }
 
 const delTabs = (e: any) => {
-	console.log('del', e)
 	tabsStore.closeCurrent(e)
 }
 </script>

@@ -107,6 +107,7 @@
 <script setup lang="ts">
 import { PlusOutlined, DeleteOutlined } from '@ant-design/icons-vue'
 import { message, type FormInstance } from 'ant-design-vue'
+import { notification } from 'ant-design-vue'
 import { h } from 'vue'
 
 const props = defineProps({
@@ -128,6 +129,7 @@ const emits = defineEmits([
 
 const formRef = ref<FormInstance>()
 const createLoading = ref(false)
+const store = useClusterStore()
 
 const formState = reactive({
 	name: '',
@@ -150,14 +152,22 @@ const hcCreateCluster = () => {
 		?.validateFields()
 		.then(async () => {
 			createLoading.value = true
-			const res = await createCluster(namespace, toRaw(formState))
-			if (res.data === 'created') {
-				message.success('create success')
-				emits('ClusterCreated', toRaw(formState).name)
-				// list.value?.unshift(toRaw(formState).name)
-			}
-			emits('update:modelValue', false)
-			formRef.value?.resetFields()
+			createCluster(namespace, toRaw(formState)).then((res) => {
+				if (res.error) {
+					console.log('err-->', res.error.message)
+					notification.error({
+						message: 'Create error',
+						description: res.error.message,
+					})
+				} else if (res?.data === 'created') {
+					console.log('res', 'create success')
+					message.success('create success')
+					emits('ClusterCreated', toRaw(formState).name)
+					// list.value?.unshift(toRaw(formState).name)
+				}
+				emits('update:modelValue', false)
+				formRef.value?.resetFields()
+			})
 		})
 		.catch((info) => {
 			console.log('Validate Failed:', info)
@@ -176,11 +186,15 @@ const hcCreateShard = () => {
 		.then(async () => {
 			createLoading.value = true
 			const { password, nodes } = toRaw(formState)
+
+			if (!cluster.value) {
+				cluster.value = store.clusters[0]?.name
+			}
 			const res = await createShard(namespace, cluster.value, {
 				password,
 				nodes,
 			})
-			if (res.data === 'created') {
+			if (res.data === 'ok') {
 				message.success('create shard success')
 				emits('ShardCreated')
 				// list.value?.unshift(toRaw(formState).name)

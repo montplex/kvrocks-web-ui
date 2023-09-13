@@ -45,20 +45,6 @@ const routes: RouteRecordRaw[] = [
 			},
 		],
 	},
-	// {
-	// 	path: '/clusters/:namespace',
-	// 	name: 'Clusters',
-	// 	//@ts-ignore
-	// 	component: () => import('~@/pages/clusters.vue'),
-	// 	/* redirect: { name: 'Details' },
-	// 	children: [
-	// 		{
-	// 			path: 'details',
-	// 			name: 'Details',
-	// 			component: () => import('~@/pages/cache/details.vue'),
-	// 		},
-	// 	], */
-	// },
 	{
 		path: '/404',
 		component: () => import('~@/pages/404.vue'),

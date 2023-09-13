@@ -23,7 +23,10 @@
 		<div class="_body">
 			<!-- Cache 列表 -->
 			<a-spin :spinning="loading">
-				<div class="grid gap-10 sm:grid-cols-3">
+				<div
+					v-if="store.nameSpaceList.length"
+					class="grid gap-10 sm:grid-cols-3"
+				>
 					<div
 						v-for="(item, index) in store.nameSpaceList"
 						:key="index"
@@ -51,6 +54,9 @@
 							</div>
 						</header>
 					</div>
+				</div>
+				<div v-else>
+					<a-empty class="mx-auto py-20" />
 				</div>
 			</a-spin>
 		</div>
@@ -98,9 +104,16 @@ const store = useClusterStore()
 
 onMounted(async () => {
 	loading.value = true
-	let res = await getNamespaceList()
-	store.setNameSpaceList(res.data.namespaces)
-	loading.value = false
+	getNamespaceList()
+		.then((res) => {
+			if (res?.data?.namespaces) {
+				store.setNameSpaceList(res.data.namespaces)
+			}
+		})
+		.catch((error) => {
+			console.log(error)
+		})
+		.finally(() => (loading.value = false))
 })
 
 const formRef = ref<FormInstance>()
@@ -158,6 +171,7 @@ const hcDel = async (namespace: string, index: number) => {
 const router = useRouter()
 const hcNameSpace = (namespace: string) => {
 	router.push({ name: 'Clusters', params: { namespace } })
+	store.clusters = []
 }
 </script>
 

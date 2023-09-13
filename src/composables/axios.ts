@@ -1,10 +1,5 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios'
-
-type Err = {
-	error: {
-		message: string
-	}
-}
+import { notification } from 'ant-design-vue'
 
 // 定义传入的拦截器接口，并且都是可以可选的。
 interface IRequestInterceptors<T = AxiosResponse> {
@@ -56,18 +51,12 @@ class Request {
 			(config: IRequestConfig) => {
 				// 在发送请求之前做些什么
 				if (this.showLoading) {
-					// 添加加载loading...
-					/*
-						this.loading = ElLoading.service({
-							lock: true,
-							text: "loading...",
-							background: "rgba(255, 255, 255, 1)"
-						});
-					 */
+					/*  添加加载loading... */
 				}
 				return config
 			},
 			(error) => {
+				console.log('添加请求拦截器err。', error)
 				// toast.warning(error.message ?? '未知请求错误')
 				// 对请求错误做些什么
 				this.loading?.close()
@@ -79,13 +68,18 @@ class Request {
 			(response: any) => {
 				// 2xx 范围内的状态码都会触发该函数。
 				// 对响应数据进行格式化
-				/* if (response.data) {
+				if (response?.response?.data?.error) {
 					this.loading?.close()
-					return response.data
-				} */
+					notification.error({
+						message: 'Request error',
+						description: response.response.data.error.message,
+					})
+				}
 				return response
 			},
 			(error) => {
+				console.log('添加响应拦截器err。', error)
+				console.log('超出 2xx 范围的状态码都会触发该函数。', error)
 				// 超出 2xx 范围的状态码都会触发该函数。
 				const code = error.response?.status
 				// const statusCode = error?.response.status || error?.status
@@ -116,8 +110,8 @@ class Request {
 							break
 					}
 				}
-				// toast.warning(msg)
 				console.error(msg)
+				notification.error({ message: 'Request error', description: msg })
 				// 超出 2xx 范围的状态码都会触发该函数。
 				// 对响应错误做点什么
 				return Promise.reject(error)

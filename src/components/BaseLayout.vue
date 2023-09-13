@@ -43,9 +43,9 @@
 				<router-view v-slot="{ Component, route }">
 					<transition name="fade" mode="out-in">
 						<div :key="route.matched[1].path" class="h-full w-full">
-							<keep-alive :include="tabsStore.cacheList as string[]">
-								<component :is="Component" />
-							</keep-alive>
+							<!-- <keep-alive :include="tabsStore.cacheList as string[]"> -->
+							<component :is="Component" />
+							<!-- </keep-alive> -->
 						</div>
 					</transition>
 				</router-view>

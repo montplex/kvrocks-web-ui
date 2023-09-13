@@ -1,0 +1,153 @@
+<template>
+	<AModal
+		title="Create Node"
+		:width="720"
+		:open="open"
+		:destroy-on-close="true"
+		@cancel="open = false"
+	>
+		<a-form
+			ref="formRef"
+			:model="formState"
+			layout="vertical"
+			name="create_node_from"
+		>
+			<a-form-item
+				name="Address"
+				label="addr"
+				:rules="[{ required: true, message: 'Please enter the address' }]"
+			>
+				<a-input v-model:value="formState.addr" placeholder="127.0.0.1:6666" />
+			</a-form-item>
+
+			<!-- <a-form-item label="Nodes" name="nodes" :rules="[{ required: true, message: 'Please choose the Nodes' }]">
+					<a-select v-model:value="formState.nodes" mode="multiple" style="width: 100%" placeholder="Select nodes."
+						option-label-prop="children">
+						<a-select-option v-for="(item, index) in nodes" :key="index" :value="item.addr" :label="item.addr">
+							<span class="flex_c">
+								<span role="img" :aria-label="item.addr">
+									<IconNode />
+								</span>
+								&nbsp;&nbsp;{{ item.addr }}
+							</span>
+						</a-select-option>
+					</a-select>
+				</a-form-item> -->
+			<!-- master, slave, sentinel。 -->
+
+			<a-form-item
+				label="Role"
+				name="role"
+				:rules="[{ required: true, message: 'Please choose the role.' }]"
+			>
+				<a-select
+					v-model:value="formState.role"
+					mode="multiple"
+					style="width: 100%"
+					placeholder="Select role."
+					option-label-prop="children"
+				>
+					<a-select-option key="master" value="master" label="Master">
+						<span class="flex_c">
+							<span role="img" aria-label="slave">
+								<IconNode />
+							</span>
+							&nbsp;&nbsp;Master
+						</span>
+					</a-select-option>
+					<a-select-option key="slave" value="slave" label="Slave">
+						<span class="flex_c">
+							<span role="img" aria-label="slave">
+								<IconNode />
+							</span>
+							&nbsp;&nbsp;Slave
+						</span>
+					</a-select-option>
+					<a-select-option key="Sentinel" value="sentinel" label="Sentinel">
+						<span class="flex_c">
+							<span role="img" aria-label="slave">
+								<IconNode />
+							</span>
+							&nbsp;&nbsp;Sentinel
+						</span>
+					</a-select-option>
+				</a-select>
+			</a-form-item>
+
+			<a-form-item
+				label="Password"
+				name="password"
+				:rules="[{ required: false }]"
+			>
+				<a-input-password v-model:value="formState.password" />
+			</a-form-item>
+		</a-form>
+		<template #footer>
+			<a-space size="middle" class="py-3">
+				<a-button @click="open = false">Cancel</a-button>
+				<a-button type="primary" :loading="createLoading" @click="$emit('onOk')"
+					>Submit</a-button
+				>
+			</a-space>
+		</template>
+	</AModal>
+</template>
+
+<script setup lang="ts">
+import { PlusOutlined, DeleteOutlined } from '@ant-design/icons-vue'
+import { message, type FormInstance } from 'ant-design-vue'
+import { notification } from 'ant-design-vue'
+import { data } from 'browserslist'
+import { h } from 'vue'
+const emits = defineEmits(['onOk'])
+const open = ref(false)
+
+const formRef = ref<FormInstance>()
+const createLoading = ref(false)
+const store = useClusterStore()
+const shard = ref()
+
+const formState = reactive({
+	addr: '',
+	role: 'slave',
+	password: '',
+})
+
+const route = useRoute()
+const namespace = route.params.namespace as string
+const cluster = route.query.cluster as string
+
+const onOk = async () => {
+	formRef.value
+		?.validateFields()
+		.then(async () => {
+			message.loading({ content: 'Creating...', key: 'createnode' })
+			createNode({
+				namespace,
+				cluster,
+				shard: shard.value,
+				data: toRaw(formState),
+			}).then((res) => {
+				if (res.data === 'created') {
+					setTimeout(() => {
+						message.success({
+							content: 'Created successfully',
+							key: 'createnode',
+							duration: 2,
+						})
+						formRef.value?.resetFields()
+					}, 600)
+				}
+				if (res.error) {
+					notification.error({
+						message: 'Request error',
+						description: res.error.message,
+					})
+				}
+			})
+		})
+		.finally(() => (createLoading.value = false))
+}
+
+defineExpose({ onOk, open, shard })
+</script>

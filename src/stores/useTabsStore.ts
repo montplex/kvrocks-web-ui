@@ -17,22 +17,28 @@ const storeSetup = () => {
 
 	// 删除一个页签
 	const deleteTagItem = (path: string) => {
+		console.log('arr', path)
 		const index = tagList.value.findIndex(
 			(item) => item.path === path && !item.meta?.affix,
 		)
+		console.log(index, 'index')
 		if (index >= 0) {
+			const item = tagList.value[index]
 			const isActive =
 				router.currentRoute.value.path === tagList.value[index]['path']
 			tagList.value.splice(index, 1)
 			if (isActive) {
-				router.push({ path: tagList.value[tagList.value.length - 1]['path'] })
+				router.replace({
+					path: tagList.value[tagList.value.length - 1]['path'],
+				})
 			}
 		}
 	}
 
 	// 清空页签
 	const clearTagList = () => {
-		const arr = tagList.value.filter((item) => item.meta?.affix ?? false)
+		// const arr = tagList.value.filter((item) => item.meta?.affix ?? false)
+		// const hasNameSpace = tagList.value.some((it) => it.name === 'NameSpace')
 		const home = [
 			{
 				path: '/name-space',
@@ -45,7 +51,7 @@ const storeSetup = () => {
 			},
 		] as any[]
 
-		tagList.value = [...home, ...arr]
+		tagList.value = [...home]
 	}
 
 	// 添加缓存页
@@ -76,6 +82,7 @@ const storeSetup = () => {
 
 	// 关闭当前
 	const closeCurrent = (path: string) => {
+		console.log('path', path)
 		deleteTagItem(path)
 		const item = tagList.value.find((i) => i.path === path)
 		if (item?.name) {
