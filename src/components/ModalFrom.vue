@@ -1,7 +1,6 @@
 <template>
 	<AModal
 		:title="type === 'cluster' ? 'Create Cluster' : 'Create Shard'"
-		:width="720"
 		:open="modelValue"
 		:destroy-on-close="true"
 		@cancel="emits('update:modelValue', false)"
@@ -62,7 +61,7 @@
 				<a-input-group compact class="!flex">
 					<a-input
 						v-model:value="formState.nodes[index]"
-						placeholder="please input node"
+						:placeholder="`127.0.0.1:666${index}`"
 					/>
 					<!-- v-if="dynamicValidateForm.domains.length > 1" -->
 					<a-button
@@ -90,7 +89,10 @@
 				name="password"
 				:rules="[{ required: false }]"
 			>
-				<a-input-password v-model:value="formState.password" />
+				<a-input-password
+					v-model:value="formState.password"
+					placeholder="Enter the password."
+				/>
 			</a-form-item>
 		</a-form>
 		<template #footer>

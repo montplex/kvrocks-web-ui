@@ -15,5 +15,8 @@ declare module '*.md' {
 	export default Component
 }
 
-declare module "vue-web-terminal";
-declare module "vue-command";
+interface ApiRes<T> {
+	error?: { message: string }
+	data: T
+}
+

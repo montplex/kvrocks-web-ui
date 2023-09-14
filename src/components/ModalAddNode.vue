@@ -1,7 +1,6 @@
 <template>
 	<AModal
 		title="Create Node"
-		:width="720"
 		:open="open"
 		:destroy-on-close="true"
 		@cancel="open = false"
@@ -11,10 +10,11 @@
 			:model="formState"
 			layout="vertical"
 			name="create_node_from"
+			class="mt-4"
 		>
 			<a-form-item
-				name="Address"
-				label="addr"
+				name="addr"
+				label="IP Address"
 				:rules="[{ required: true, message: 'Please enter the address' }]"
 			>
 				<a-input v-model:value="formState.addr" placeholder="127.0.0.1:6666" />
@@ -42,7 +42,6 @@
 			>
 				<a-select
 					v-model:value="formState.role"
-					mode="multiple"
 					style="width: 100%"
 					placeholder="Select role."
 					option-label-prop="children"
@@ -50,7 +49,7 @@
 					<a-select-option key="master" value="master" label="Master">
 						<span class="flex_c">
 							<span role="img" aria-label="slave">
-								<IconNode />
+								<IconClusterRole />
 							</span>
 							&nbsp;&nbsp;Master
 						</span>
@@ -58,7 +57,7 @@
 					<a-select-option key="slave" value="slave" label="Slave">
 						<span class="flex_c">
 							<span role="img" aria-label="slave">
-								<IconNode />
+								<IconClusterRole />
 							</span>
 							&nbsp;&nbsp;Slave
 						</span>
@@ -66,7 +65,7 @@
 					<a-select-option key="Sentinel" value="sentinel" label="Sentinel">
 						<span class="flex_c">
 							<span role="img" aria-label="slave">
-								<IconNode />
+								<IconClusterRole />
 							</span>
 							&nbsp;&nbsp;Sentinel
 						</span>
@@ -79,7 +78,10 @@
 				name="password"
 				:rules="[{ required: false }]"
 			>
-				<a-input-password v-model:value="formState.password" />
+				<a-input-password
+					v-model:value="formState.password"
+					placeholder="Enter the password."
+				/>
 			</a-form-item>
 		</a-form>
 		<template #footer>
@@ -94,12 +96,11 @@
 </template>
 
 <script setup lang="ts">
-import { PlusOutlined, DeleteOutlined } from '@ant-design/icons-vue'
+// import { PlusOutlined, DeleteOutlined } from '@ant-design/icons-vue'
 import { message, type FormInstance } from 'ant-design-vue'
 import { notification } from 'ant-design-vue'
-import { data } from 'browserslist'
-import { h } from 'vue'
-const emits = defineEmits(['onOk'])
+// import { h } from 'vue'
+
 const open = ref(false)
 
 const formRef = ref<FormInstance>()
@@ -124,7 +125,7 @@ const onOk = async () => {
 			message.loading({ content: 'Creating...', key: 'createnode' })
 			createNode({
 				namespace,
-				cluster,
+				cluster: cluster ?? store.current[0] ?? store.clusters[0].name,
 				shard: shard.value,
 				data: toRaw(formState),
 			}).then((res) => {

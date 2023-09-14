@@ -2,7 +2,7 @@
 import '@unocss/reset/tailwind-compat.css' // unocss reset
 import 'virtual:uno.css'
 import 'virtual:unocss-devtools'
-import { scrollbar } from '~@/composables/scrollbar'
+import { scrollbar } from '~@/composables/directives/scrollbar'
 
 // 你自定义的 css
 import './styles/main.css'

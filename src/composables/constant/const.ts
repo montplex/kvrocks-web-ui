@@ -22,7 +22,7 @@ export const SHARDS_COLUMNS = [
 	{ title: 'Action', key: 'actions' },
 ]
 
-export const NODES_COLUMNS = [
+export const NODES_COLUMNS: any = [
 	{
 		title: 'Addr',
 		dataIndex: 'addr',

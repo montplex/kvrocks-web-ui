@@ -1,4 +1,5 @@
 import { http } from '~@/composables/http'
+
 import type {
 	ClusterRes,
 	Body,
@@ -6,7 +7,7 @@ import type {
 	ShardResList,
 	ListNode,
 	MigrateBody,
-} from '#/cluster'
+} from '~@/types/cluster'
 import { useRequest } from 'vue-request'
 
 type Err = { error: { message: string } }
@@ -158,7 +159,7 @@ export const createShard = (
 	})
 }
 
-type ShardParams = Pick<Body, 'namespace' | 'cluster' | 'shard'>
+type ShardParams = Required<Pick<Body, 'namespace' | 'cluster' | 'shard'>>
 
 /** Get Shard 获取分片 */
 export const getShard = (data: ShardParams) => {
@@ -192,13 +193,13 @@ export const getListShard = (data: Pick<Body, 'namespace' | 'cluster'>) => {
 /** Delete Shard 删除分片 */
 export const delShard = (data: ShardParams) => {
 	const { namespace, cluster, shard } = data
-	if (process.env.NODE_ENV === 'production') {
-		url = `/v1/namespaces/${namespace}/clusters/${cluster}/shards/${shard}`
-	} else {
-		url = `/v1/namespaces/namespace_1/clusters/cluster_1/shards/shard_1`
-	}
+	// if (process.env.NODE_ENV === 'production') {
+	// 	url = `/v1/namespaces/${namespace}/clusters/${cluster}/shards/${shard}`
+	// } else {
+	// 	url = `/v1/namespaces/namespace_1/clusters/cluster_1/shards/shard_1`
+	// }
 	return http.delete<{ data: 'ok' }>({
-		url,
+		url: `/v1/namespaces/${namespace}/clusters/${cluster}/shards/${shard}`,
 	})
 }
 
@@ -236,7 +237,7 @@ export const getListNode = (data: ShardParams) => {
 export const delNode = (data: Body) => {
 	const { namespace, cluster, shard, nodeID } = data
 	return http.delete<{ data: 'ok' }>({
-		url: `/v1/namespaces/namespace_1/clusters/cluster_1/shards/shard_1/nodes/nodeid_1`,
+		url: `/v1/namespaces/${namespace}/clusters/${cluster}/shards/${shard}/nodes/${nodeID}`,
 	})
 }
 
@@ -252,8 +253,8 @@ export const MigrateSlotData = (
 	data: Pick<Body, 'namespace' | 'cluster'> & { data: MigrateBody },
 ) => {
 	const { namespace, cluster } = data
-	return http.post<{ data: 'created' }>({
-		url: `/v1/namespaces/namespace_1/clusters/cluster_1/shards/migration/slot_data`,
+	return http.post<{ data: 'ok' }>({
+		url: `/v1/namespaces/${namespace}/clusters/${cluster}/shards/migration/slot_data`,
 		data: data.data,
 	})
 }

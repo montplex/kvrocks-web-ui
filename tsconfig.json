@@ -15,19 +15,19 @@
 		"baseUrl": ".",
 		"paths": {
 			"~@/*": ["src/*"],
-			"tsx/*": ["src/components/ts/*"],
 			"api/*": ["src/api/*"],
 			"#/*": ["src/types/*"]
 		}
 	},
 	"include": [
-		"srcipts",
 		"presets",
+		"src/types/*.ts",
 		"src/**/*.ts",
 		"src/**/*.d.ts",
 		"src/**/*.tsx",
 		"src/**/*.vue",
-		"./vite.config.ts"
+		"./vite.config.ts",
+		"src/plugins"
 	],
 	"exclude": ["node_modules", "dist"]
 }

@@ -1,5 +1,5 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios'
-import { notification } from 'ant-design-vue'
+import { notification, message } from 'ant-design-vue'
 
 // 定义传入的拦截器接口，并且都是可以可选的。
 interface IRequestInterceptors<T = AxiosResponse> {
@@ -13,27 +13,28 @@ interface IRequestInterceptors<T = AxiosResponse> {
 	responseErrorInterceptor?: (err: any) => any
 }
 
-export interface IRequestConfig<T = AxiosResponse> extends AxiosRequestConfig {
+interface IRequestConfig<T = AxiosResponse> extends AxiosRequestConfig {
 	// 每个request实例可以不传入拦截器
 	interceptors?: IRequestInterceptors<T>
 	// 是否显示loading
-	showLoading?: boolean
+	loading?: Ref<boolean>
 }
 
-export interface IResponseData extends AxiosResponse {
+interface IResponseData extends AxiosResponse {
 	config: IRequestConfig
 }
 
-const DEFAULT_LOADING = false
+/** 接口返回数据格式 */
+/* interface ApiRes<T> {
+	error?: { message: string }
+	data: T
+}*/
 
 class Request {
-	private instance: AxiosInstance
-	private showLoading: boolean
-	private loading?: any
+	instance: AxiosInstance
+	loading?: Ref<boolean>
 
 	constructor(config: IRequestConfig) {
-		// 默认不加载loading
-		this.showLoading = config.showLoading ?? DEFAULT_LOADING
 		this.instance = axios.create(config)
 
 		// 创建实例请求拦截器
@@ -41,79 +42,70 @@ class Request {
 			config.interceptors?.requestSuccessInterceptor,
 			config.interceptors?.requestErrorInterceptor,
 		)
+
 		// 创建实例响应拦截器
 		this.instance.interceptors.response.use(
 			config.interceptors?.responseSuccessInterceptor,
 			config.interceptors?.responseErrorInterceptor,
 		)
-		// 添加请求拦截器
+
+		/** 请求拦截器 */
 		this.instance.interceptors.request.use(
 			(config: IRequestConfig) => {
-				// 在发送请求之前做些什么
-				if (this.showLoading) {
-					/*  添加加载loading... */
+				console.log('请求拦截器-> success ', config)
+				if (config.loading) {
+					config.loading.value = true
 				}
 				return config
 			},
 			(error) => {
-				console.log('添加请求拦截器err。', error)
-				// toast.warning(error.message ?? '未知请求错误')
-				// 对请求错误做些什么
-				this.loading?.close()
+				console.log('请求拦截器-> err', error)
 				return Promise.reject(error)
 			},
 		)
-		// 添加响应拦截器
+		/**  响应拦截器 */
 		this.instance.interceptors.response.use(
-			(response: any) => {
-				// 2xx 范围内的状态码都会触发该函数。
-				// 对响应数据进行格式化
-				if (response?.response?.data?.error) {
-					this.loading?.close()
-					notification.error({
-						message: 'Request error',
-						description: response.response.data.error.message,
-					})
+			(response: IResponseData) => {
+				if (response.config.loading) {
+					response.config.loading.value = false
 				}
-				return response
+				console.log('响应拦截器-> response', response)
+				const data = response.data.data
+				console.log('--------Data', data)
+				if (data.error?.message) {
+					// 如果错误信息长度过长，使用 Notification 进行提示
+					if (data.error?.message.length <= 15) {
+						message.error(data.error?.message?.message)
+					} else {
+						notification.error({
+							message: 'Request error',
+							duration: 1.8,
+							description: data.error?.message?.message,
+						})
+					}
+					return Promise.reject(new Error('Error'))
+				}
+				return response.data
 			},
 			(error) => {
-				console.log('添加响应拦截器err。', error)
-				console.log('超出 2xx 范围的状态码都会触发该函数。', error)
-				// 超出 2xx 范围的状态码都会触发该函数。
-				const code = error.response?.status
-				// const statusCode = error?.response.status || error?.status
-				let { msg, message } = error?.response?.data ?? {}
-				if (!msg && message) {
-					msg = message
+				console.log('响应拦截器-> err', error)
+
+				if (error.config.loading) {
+					error.config.loading.value = false
 				}
-				if (!msg) {
-					switch (code) {
-						case 400:
-							/** 参数错误 */
-							msg = '400 Bad Request'
-							break
-						case 500:
-							/** 服务端错误 */
-							msg = '500 Internal Server Error'
-							break
-						case 404:
-							/** 请求资源不存在 */
-							msg = '404 Not Found'
-							break
-						case 403:
-							msg = '403 Forbidden'
-							/** 身份已过期，请重新登录 */
-							break
-						default:
-							msg = error.message ?? 'response error'
-							break
+
+				if (error.response?.data) {
+					if (error.response.data?.error) {
+						notification.error({
+							message: 'Request error',
+							description: error.response.data.error.message,
+							duration: 3,
+						})
+					} else {
+						message.error('request error')
 					}
 				}
-				console.error(msg)
-				notification.error({ message: 'Request error', description: msg })
-				// 超出 2xx 范围的状态码都会触发该函数。
-				// 对响应错误做点什么
+				message.destroy()
 				return Promise.reject(error)
 			},
 		)
@@ -121,10 +113,6 @@ class Request {
 	/** 通用请求工具函数 */
 	request<T>(config: IRequestConfig<T>): Promise<T> {
 		return new Promise((resolve, reject) => {
-			// 定制该请求是否加loading。当为传入该参数时，默认为true
-			if (config.showLoading === false) {
-				this.showLoading = false
-			}
 			// 创建单个请求的请求拦截器
 			if (config.interceptors?.requestSuccessInterceptor) {
 				// 直接调用，然后将处理后的config返回
@@ -139,12 +127,9 @@ class Request {
 					}
 					resolve(res)
 				})
-				.catch((err) => {
-					reject(err)
-				})
+				.catch((err) => reject(err))
 				.finally(() => {
-					/* 避免影响下一次请求设置的 showLoading */
-					this.showLoading = DEFAULT_LOADING
+					if (this.loading?.value) this.loading.value = false
 				})
 		})
 	}

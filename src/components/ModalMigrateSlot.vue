@@ -1,12 +1,11 @@
 <template>
 	<AModal
 		title="Migrate Slot "
-		:width="720"
-		:open="modelValue"
+		:open="open"
 		:destroy-on-close="true"
-		@cancel="emits('update:modelValue', false)"
+		@cancel="open = false"
 	>
-		<a-radio-group v-model:value="type">
+		<a-radio-group v-model:value="type" class="my-3">
 			<a-radio-button :value="1">Migrate Slot And Data</a-radio-button>
 			<a-radio-button :value="2">Migrate Slot Only</a-radio-button>
 		</a-radio-group>
@@ -16,25 +15,12 @@
 			:model="data"
 			layout="vertical"
 			name="create_cluster_from"
+			class="my-4"
 		>
-			<a-form-item
-				label="Source"
-				name="nodes"
-				:rules="[{ required: true, message: 'Please choose the Nodes' }]"
-			>
-				<a-select
-					v-model:value="data.slots"
-					mode="multiple"
-					style="width: 100%"
-					placeholder="Select nodes."
-					option-label-prop="children"
-				>
-					<a-select-option
-						v-for="(item, index) in nodes"
-						:key="index"
-						:value="item.addr"
-						:label="item.addr"
-					>
+			<!-- <a-form-item label="Source" name="source" :rules="[{ required: true, message: 'Please choose the Nodes' }]">
+				<a-select v-model:value="data.source"  style="width: 100%" placeholder="Select nodes."
+					option-label-prop="children">
+					<a-select-option v-for="item in nodes" :key="item.key" :value="item.key" :label="item.addr">
 						<span class="flex_c">
 							<span role="img" :aria-label="item.addr">
 								<IconNode />
@@ -43,48 +29,100 @@
 						</span>
 					</a-select-option>
 				</a-select>
+			</a-form-item> -->
+			<!-- <a-form-item label="Target" name="target" :rules="[{ required: true, message: 'Please choose the Nodes' }]">
+				<a-select v-model:value="data.target"  style="width: 100%" placeholder="Select nodes."
+					option-label-prop="children">
+					<a-select-option v-for="(item, index) in targetList" :key="item.addr" :value="item.key" :label="item.addr">
+						<span class="flex_c">
+							<span role="img" :aria-label="item.addr">
+								<IconNode />
+							</span>
+							&nbsp;&nbsp;{{ item.addr }}
+						</span>
+					</a-select-option>
+				</a-select>
+			</a-form-item> -->
+
+			<a-form-item
+				label="Source"
+				name="source"
+				:rules="[{ required: true, message: 'Please input the source index' }]"
+			>
+				<a-input
+					v-model:value="data.source"
+					class="w-full"
+					placeholder="input source index."
+				/>
 			</a-form-item>
 
 			<a-form-item
 				label="Target"
-				name="nodes"
-				:rules="[{ required: true, message: 'Please choose the Nodes' }]"
+				name="target"
+				:rules="[{ required: true, message: 'Please input the target indexs' }]"
 			>
-				<a-select
-					v-model:value="data.slots"
-					mode="multiple"
-					style="width: 100%"
-					placeholder="Select nodes."
-					option-label-prop="children"
-				>
-					<a-select-option
-						v-for="(item, index) in nodes"
-						:key="index"
-						:value="item.addr"
-						:label="item.addr"
-					>
-						<span class="flex_c">
-							<span role="img" :aria-label="item.addr">
-								<IconNode />
-							</span>
-							&nbsp;&nbsp;{{ item.addr }}
-						</span>
-					</a-select-option>
-				</a-select>
+				<a-input
+					v-model:value="data.target"
+					class="w-full"
+					placeholder="input target index."
+				/>
 			</a-form-item>
 
 			<a-form-item
 				v-if="type === 1"
 				name="slot"
 				label="Slot"
-				:rules="[{ required: true, type: 'number', min: 1, max: 10 }]"
+				:rules="[{ required: true, message: 'Please input the slot' }]"
 			>
-				<a-input v-model:value="data.slot" class="w-full" />
+				<a-input
+					v-model:value="data.slot"
+					class="w-full"
+					placeholder="input slot."
+				/>
 			</a-form-item>
+
+			<div v-if="type === 2">
+				<a-form-item
+					v-for="(node, index) in data.slots"
+					:key="index"
+					:label="index === 0 ? 'Slots' : ''"
+					:name="['slots', index]"
+					:rules="{
+						required: true,
+						message: 'Slot can not be null',
+						trigger: 'change',
+					}"
+				>
+					<a-input-group compact class="!flex">
+						<a-input
+							v-model:value="data.slots![index]"
+							placeholder="please input slot"
+						/>
+						<!-- <a-button
+						v-if="data.slots!.length > 1"
+						class="flex_cc text-[#8c8c8c]"
+						:icon="h(DeleteOutlined)"
+						@click="removeDomain(index)"
+					/> -->
+					</a-input-group>
+				</a-form-item>
+
+				<!-- <a-form-item>
+				<a-button
+					type="dashed"
+					class="flex_cc text-[#8c8c8c]"
+					style="width: 30%"
+					:icon="h(PlusOutlined)"
+					@click="formAddNodes"
+				>
+					Add Slot
+				</a-button>
+			</a-form-item> -->
+			</div>
 		</a-form>
 		<template #footer>
 			<a-space size="middle" class="py-3">
-				<a-button @click="$emit('update:modelValue', false)">Cancel</a-button>
+				<a-button @click="open = false">Cancel</a-button>
 				<a-button type="primary" :loading="loading" @click="hcSubmit"
 					>Submit</a-button
 				>
@@ -94,57 +132,48 @@
 </template>
 
 <script setup lang="ts">
-import type { FormInstance } from 'ant-design-vue'
+import { message, type FormInstance } from 'ant-design-vue'
 import type { MigrateBody } from '#/cluster'
 
-defineProps<{
-	modelValue: boolean
-	nodes: any[]
-}>()
-
-const emits = defineEmits(['update:modelValue', 'onOk'])
+const open = ref(false)
+const type = ref(1)
 
 const formRef = ref<FormInstance>()
 const loading = ref(false)
 
+const emits = defineEmits(['onOk'])
+
 const data = reactive<MigrateBody>({
-	source: 0,
-	target: 1,
-	slot: 123,
-	slots: [],
+	source: '',
+	target: '',
+	slot: undefined,
+	slots: ['', ''],
 })
-const type = ref(1)
 
 const route = useRoute()
 const namespace = route.params.namespace as string
-const cluster = ref(route.query.cluster as string)
-
-/** 创建集群  */
-const hcCreateCluster = () => {
-	/* if (formState.nodes.length === 0) {
-		message.error('nodes can not be null')
-		return
-	} */
-	/* formRef.value
-		?.validateFields()
-		.then(async () => {
-			createLoading.value = true
-			const res = await createCluster(namespace, toRaw(formState))
-			if (res.data === 'created') {
-				message.success('create success')
-				emits('ClusterCreated', toRaw(formState).name)
-				// list.value?.unshift(toRaw(formState).name)
-			}
-			emits('update:modelValue', false)
-			formRef.value?.resetFields()
-		})
-		.catch((info) => {
-			console.log('Validate Failed:', info)
-		})
-		.finally(() => (createLoading.value = false)) */
-}
+const store = useClusterStore()
 
 const hcSubmit = () => {
-	console.log('submit')
+	const cluster = route.query.cluster as string
+	formRef.value
+		?.validateFields()
+		.then(async () => {
+			loading.value = true
+			MigrateSlotData({
+				namespace,
+				cluster: cluster ?? store.current[0] ?? store.clusters[0].name,
+				data: toRaw(data),
+			}).then((res) => {
+				if (res.data === 'ok') {
+					message.success('migrate success')
+					emits('onOk')
+				}
+			})
+			formRef.value?.resetFields()
+		})
+		.finally(() => (loading.value = false))
 }
+
+defineExpose({ open })
 </script>

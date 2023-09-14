@@ -214,7 +214,6 @@ export const _dirname =
 // 别名插件
 function Alias(): Plugin {
 	const src = resolve(_dirname, '../src')
-	const tsx_components = resolve(_dirname, '../src/components/ts')
 	const api = resolve(_dirname, '../src/api')
 	const types = resolve(_dirname, '../src/types')
 	return {
@@ -224,9 +223,6 @@ function Alias(): Plugin {
 			config.resolve ??= {}
 			config.resolve.alias = [
 				{ find: /^~@/, replacement: src },
-				// { find: /^~/, replacement: src },
-				// { find: /^@\//, replacement: src + '/' },
-				{ find: /^tsx/, replacement: tsx_components },
 				{ find: /^api/, replacement: api },
 				{ find: /^#/, replacement: types },
 			]

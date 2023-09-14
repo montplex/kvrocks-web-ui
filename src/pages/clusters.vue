@@ -125,6 +125,7 @@ const openShow = () => {
 }
 
 onMounted(() => init(route.params.namespace as string))
+
 const init = (namespace: string) => {
 	store.clusters = []
 	base.setLoading(true)
@@ -139,6 +140,10 @@ const init = (namespace: string) => {
 				store.setCurrent(
 					(route.query.cluster as string) || res.data.clusters[0],
 				)
+				/* if (!route.query.cluster) {
+					// route.query.cluster = list[0].name
+					router.push({ name: 'Nodes', query: { cluster: list[0].name } })
+				} */
 			}
 			base.setLoading(false)
 		})
