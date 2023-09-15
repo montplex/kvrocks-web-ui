@@ -6,6 +6,7 @@ export default defineConfig(({ mode }: ConfigEnv) => {
 	const root = process.cwd()
 	const env = loadEnv(mode, root)
 	return {
+		base: './',
 		plugins: [ToYi()],
 		server: {
 			// host: '0.0.0.0',

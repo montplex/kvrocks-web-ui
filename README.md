@@ -1,14 +1,24 @@
 # Kvrocks Web
 
-# Kvrocks Web
 
 node.js >= 16.0.0
 
 ## Project Setup
 
+
 ```sh
 pnpm install
 ```
+
+
+**Please configure the API first**
+
+Edit `.env.development` file, and change the value of `VITE_API_URL` to the API address of the development environment.
+
+```sh
+VITE_API_URL= http://localhost:8080
+```
+
 
 ### Compile and Hot-Reload for Development
 
@@ -37,8 +47,8 @@ pnpm lint:fix
 
 ## Configure API address link for production environment
 
-Edit `.env.development` file
+Edit `.env.production` file, and change the value of `VITE_API_URL` to the API address of the production environment.
 
 ```sh
-VITE_API_URL= http://localhost:8080
+VITE_API_URL= http://api/Kvrocks-web
 ```
