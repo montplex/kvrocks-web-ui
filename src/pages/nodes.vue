@@ -81,9 +81,10 @@
 			</template>
 			<template #expandedRowRender="{ record }">
 				<div class="">
-					<span class="flex items-center gap-2 font-semibold"
-						><IconNode /> Nodes</span
-					>
+					<span class="flex_c font-semibold">
+						<span class="flex_c gap-2"><IconNode /> Nodes</span>
+						<IconNull v-if="!record.nodes.length" class="flex-1" />
+					</span>
 					<a-table
 						v-if="record.nodes.length"
 						:columns="NODES_COLUMNS"
@@ -290,7 +291,10 @@ const hcCreateNode = (e: any) => {
 	nodeRef.value.shard = e.key
 }
 
-const createNodeOnOk = () => nodeRef.value.onOk()
+const createNodeOnOk = async () => {
+	await nodeRef.value.onOk()
+	submitOk()
+}
 
 const hcDeleteShard = (e: Shard) => {
 	if (e.nodes?.length) {
@@ -328,16 +332,5 @@ const hcDeleteShard = (e: Shard) => {
 				})
 		},
 	})
-}
-
-const expand = (e: any) => {
-	console.log(e)
-}
-const expandedRowsChange = (e: any) => {
-	console.log(e)
-}
-const onExpanded = (e: any) => {
-	console.log(e)
-	e.expanded = !e.expanded
 }
 </script>

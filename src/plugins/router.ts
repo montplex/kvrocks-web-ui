@@ -1,4 +1,8 @@
-import { createRouter, createWebHistory } from 'vue-router'
+import {
+	createRouter,
+	createWebHistory,
+	createWebHashHistory,
+} from 'vue-router'
 import { RouteRecordRaw } from 'vue-router'
 import Layout from '~@/components/BaseLayout.vue'
 import NameSpace from '~@/pages/index.vue'
@@ -56,7 +60,7 @@ const routes: RouteRecordRaw[] = [
 ]
 
 export const router = createRouter({
-	history: createWebHistory(),
+	history: createWebHashHistory(),
 	routes: routes,
 })
 export default router

@@ -21,7 +21,7 @@
 			</div>
 		</div>
 		<div class="_body h-full w-full">
-			<a-spin :spinning="base.loading" class="mx-auto pt-60">
+			<a-spin :spinning="base.loading" class="w-full pt-60 !mx-auto">
 				<div v-if="store.clusters?.length" class="flex">
 					<a-menu
 						v-model:selectedKeys="store.current"

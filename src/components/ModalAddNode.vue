@@ -96,11 +96,7 @@
 </template>
 
 <script setup lang="ts">
-// import { PlusOutlined, DeleteOutlined } from '@ant-design/icons-vue'
 import { message, type FormInstance } from 'ant-design-vue'
-import { notification } from 'ant-design-vue'
-// import { h } from 'vue'
-
 const open = ref(false)
 
 const formRef = ref<FormInstance>()
@@ -122,6 +118,7 @@ const onOk = async () => {
 	formRef.value
 		?.validateFields()
 		.then(async () => {
+			createLoading.value = true
 			message.loading({ content: 'Creating...', key: 'createnode' })
 			createNode({
 				namespace,
@@ -130,20 +127,13 @@ const onOk = async () => {
 				data: toRaw(formState),
 			}).then((res) => {
 				if (res.data === 'created') {
-					setTimeout(() => {
-						message.success({
-							content: 'Created successfully',
-							key: 'createnode',
-							duration: 2,
-						})
-						formRef.value?.resetFields()
-					}, 600)
-				}
-				if (res.error) {
-					notification.error({
-						message: 'Request error',
-						description: res.error.message,
+					message.success({
+						content: 'Created successfully',
+						key: 'createnode',
+						duration: 2,
 					})
+					formRef.value?.resetFields()
+					open.value = false
 				}
 			})
 		})
