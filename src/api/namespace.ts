@@ -38,12 +38,7 @@ export const getNamespaceList = () => {
 
 /** Delete Namespace 删除命名空间 */
 export const delNamespace = (namespace: string) => {
-	/* if (process.env.NODE_ENV === 'production') {
-		url =
-	} else {
-		url = `/v1/namespaces/namespace_1`
-	} */
-	return http.get<{ data: 'ok' }>({
+	return http.delete<{ data: 'ok' }>({
 		url: `/v1/namespaces/${namespace}`,
 	})
 }

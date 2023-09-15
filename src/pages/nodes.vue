@@ -21,70 +21,130 @@
 			>
 		</div>
 		<a-table
+			v-model:expanded-row-keys="expandedList"
 			:columns="SHARDS_COLUMNS"
 			:data-source="shards?.shards"
 			:pagination="false"
+			:default-expand-all-rows="true"
 		>
-			<template #expandColumnTitle><span>Nodes</span></template>
+			<template #expandColumnTitle><span>Shards</span></template>
+
 			<template #bodyCell="{ column, text, record }">
 				<template v-if="column.dataIndex === 'slot_ranges'">
-					<ATag v-for="tag in text" :key="tag" color="green"> {{ tag }} </ATag>
+					<ATag
+						v-for="tag in text"
+						:key="tag"
+						:color="
+							tag.length > 2 ? 'orange' : tag.length > 5 ? 'geekblue' : 'green'
+						"
+					>
+						{{ tag }}
+					</ATag>
+				</template>
+				<template v-if="column.dataIndex === 'key'">
+					<!-- {{ text }} -->
+					<ATag color="green"> {{ text }} </ATag>
+					<!-- <ATag color="#1b6cf8"> {{ text }} </ATag> -->
 				</template>
 				<template v-if="column.key === 'actions'">
-					<a-button type="link" @click="hcCreateNode(record)"
-						>Create Node
-					</a-button>
-					<!-- <a-popconfirm title="Sure to delete this Shard?" @confirm="hcDeleteShard(record as any)"> -->
-					<a-button type="link" danger @click="hcDeleteShard(record as any)"
-						>Delete</a-button
-					>
-					<!-- </a-popconfirm> -->
+					<div class="mx-auto">
+						<ul
+							v-if="
+								record.import_slot !== '-1' && record.migrating_slot != '-1'
+							"
+							display="flex"
+						>
+							<li class="flex items-center gap-1">
+								<IconImport class="text-[#47b77b]" />
+								<span>Import Slot: </span>
+								<ATag color="green"> {{ record.import_slot }}</ATag>
+							</li>
+							<a-divider type="vertical" class="my-auto" />
+							<li class="flex items-center gap-1">
+								<IconExport class="text-[#ff4d4f]" />
+								<span>Migrating Slot: </span>
+								<ATag color="red"> {{ record.migrating_slot }}</ATag>
+							</li>
+						</ul>
+						<div class="">
+							<a-button type="link" @click="hcCreateNode(record)"
+								>Create Node
+							</a-button>
+							<a-divider type="vertical" class="my-auto" />
+							<a-button type="link" danger @click="hcDeleteShard(record as any)"
+								>Delete</a-button
+							>
+						</div>
+					</div>
 				</template>
 			</template>
 			<template #expandedRowRender="{ record }">
-				<a-table
-					v-if="record.nodes.length"
-					:columns="NODES_COLUMNS"
-					:data-source="record.nodes"
-					:pagination="false"
-				>
-					<template #bodyCell="{ column, text, record }">
-						<template v-if="column.dataIndex === 'created_at'">
-							<p>{{ dayjs(text).format('YYYY-MM-DD HH:mm:ss') }}</p>
+				<div class="">
+					<span class="flex items-center gap-2 font-semibold"
+						><IconNode /> Nodes</span
+					>
+					<a-table
+						v-if="record.nodes.length"
+						:columns="NODES_COLUMNS"
+						:data-source="record.nodes"
+						:pagination="false"
+						class="ml-11"
+					>
+						<template #bodyCell="{ column, text, record }">
+							<template v-if="column.dataIndex === 'created_at'">
+								<p>{{ dayjs(text).format('YYYY-MM-DD HH:mm:ss') }}</p>
+							</template>
+							<template v-if="column.dataIndex === 'addr'">
+								<a class="text-main">{{ text }}</a>
+							</template>
+							<template v-if="column.dataIndex === 'password'">
+								<a v-if="!text"> - </a>
+								<span v-else class="text-main">
+									<p class="flex_cc gap-2">
+										<i class="h-[14px]">***********</i>
+										<ATooltip
+											v-if="isSupported"
+											:title="copied ? 'Copied' : 'Copy'"
+										>
+											<div @click="copy(text)">
+												<CheckOutlined v-if="copied" />
+												<CopyOutlined v-else />
+											</div>
+										</ATooltip>
+									</p>
+								</span>
+							</template>
+							<template v-if="column.dataIndex === 'role'">
+								<ATag
+									v-if="text"
+									:color="
+										text === 'master'
+											? 'red'
+											: text === 'slave'
+											? 'blue'
+											: 'volcano'
+									"
+								>
+									{{ text }}</ATag
+								>
+								<a v-else> - </a>
+							</template>
+
+							<template v-if="column.dataIndex === 'master_auth'">
+								<ATag v-if="text" color="purple"> {{ text }}</ATag>
+								<a v-else> - </a>
+							</template>
+							<template v-if="column.key === 'actions'">
+								<a-popconfirm
+									title="Sure to delete this node?"
+									@confirm="deleteNodes(record as any)"
+								>
+									<a-button type="link" danger>Delete</a-button>
+								</a-popconfirm>
+							</template>
 						</template>
-						<template v-if="column.dataIndex === 'addr'">
-							<a class="text-main">{{ text }}</a>
-						</template>
-						<template v-if="column.dataIndex === 'password'">
-							<a v-if="!text"> - </a>
-							<span v-else class="text-main">
-								<p class="flex_cc gap-2">
-									<i class="h-[14px]">***********</i>
-									<ATooltip
-										v-if="isSupported"
-										:title="copied ? 'Copied' : 'Copy'"
-									>
-										<div @click="copy(text)">
-											<CheckOutlined v-if="copied" />
-											<CopyOutlined v-else />
-										</div>
-									</ATooltip>
-								</p>
-							</span>
-						</template>
-						<template v-if="column.dataIndex === 'master_auth'">
-							<a> {{ text || '-' }}</a>
-						</template>
-						<template v-if="column.key === 'actions'">
-							<a-popconfirm
-								title="Sure to delete this node?"
-								@confirm="deleteNodes(record as any)"
-							>
-								<a-button type="link" danger>Delete</a-button>
-							</a-popconfirm>
-						</template>
-					</template>
-				</a-table>
+					</a-table>
+				</div>
 			</template>
 		</a-table>
 	</div>
@@ -105,6 +165,9 @@ import {
 	CheckOutlined,
 	DeleteOutlined,
 	ExclamationCircleOutlined,
+	CaretDownOutlined,
+	CaretUpOutlined,
+	CaretRightOutlined,
 } from '@ant-design/icons-vue'
 
 import { Modal, message } from 'ant-design-vue'
@@ -112,6 +175,15 @@ import type { Cluster, ClusterRes, Shard, Node } from '#/cluster'
 import { SHARDS_COLUMNS, NODES_COLUMNS } from '~@/composables/constant/const'
 import { h } from 'vue'
 import dayjs from 'dayjs'
+
+/* const expandIcon = (props:any) =>{
+	console.log(props)
+	if(props.expanded){
+		return h(CaretUpOutlined )
+	}else{
+		return h(CaretRightOutlined)
+	}
+} */
 
 const route = useRoute()
 const router = useRouter()
@@ -127,6 +199,7 @@ const shards = ref<Cluster>()
 const delOpen = ref(false)
 const nodeRef = ref()
 const migrateRef = ref()
+const expandedList = ref<any[]>()
 
 watch(
 	() => store.current,
@@ -153,6 +226,7 @@ async function clusterInit(cluster: string) {
 						node.shard = idx
 					})
 				})
+				expandedList.value = list.map((_) => _.key)
 				shards.value = { ...res.data.cluster, shards: list }
 			}
 		})
@@ -253,5 +327,16 @@ const hcDeleteShard = (e: Shard) => {
 				})
 		},
 	})
+}
+
+const expand = (e: any) => {
+	console.log(e)
+}
+const expandedRowsChange = (e: any) => {
+	console.log(e)
+}
+const onExpanded = (e: any) => {
+	console.log(e)
+	e.expanded = !e.expanded
 }
 </script>
