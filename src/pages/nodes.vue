@@ -9,6 +9,7 @@
 					danger
 					:icon="h(DeleteOutlined)"
 					class="flex_cc"
+					@click="delOpen = true"
 				/>
 			</a-tooltip>
 			<a-button type="primary" class="flex_cc gap-2" @click="hcMigrateSlot">
